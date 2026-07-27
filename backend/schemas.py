@@ -32,6 +32,18 @@ class EcsConfigUpdateRequest(BaseModel):
     networkZone: Optional[str] = None
 
 
+class SchedulerConfigItem(BaseModel):
+    id: Optional[int] = None
+    cronExpr: Optional[str] = None
+    metricPeriod: Optional[int] = None
+
+
+class SchedulerConfigUpdateRequest(BaseModel):
+    id: int
+    cronExpr: Optional[str] = None
+    metricPeriod: Optional[int] = None
+
+
 class CloudVmListRequest(BaseModel):
     department: Optional[str] = None
     appSystem: Optional[str] = None
@@ -103,6 +115,29 @@ class MetricDataPoint(BaseModel):
     diskUtilMax: Optional[float] = None
     diskUtilAvg: Optional[float] = None
     diskUtilMin: Optional[float] = None
+
+
+class ParseRuleItem(BaseModel):
+    id: Optional[int] = None
+    namePrefix: Optional[str] = None
+    departmentIndex: Optional[int] = None
+    appSystemIndex: Optional[int] = None
+    enabled: Optional[int] = None
+
+
+class ParseRuleCreateRequest(BaseModel):
+    namePrefix: str
+    departmentIndex: int = 1
+    appSystemIndex: int = 2
+    enabled: int = 1
+
+
+class ParseRuleUpdateRequest(BaseModel):
+    id: int
+    namePrefix: Optional[str] = None
+    departmentIndex: Optional[int] = None
+    appSystemIndex: Optional[int] = None
+    enabled: Optional[int] = None
 
 
 class ExportReportRequest(BaseModel):

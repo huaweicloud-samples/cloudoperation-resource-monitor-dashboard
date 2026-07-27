@@ -73,6 +73,24 @@ class EcsServer(Base):
     app_system = Column(String(128))
 
 
+class ParseRule(Base):
+    __tablename__ = "parse_rule"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name_prefix = Column(String(255), nullable=False, comment="云主机名称前缀")
+    department_index = Column(Integer, nullable=False, default=1, comment="部门字段在下划线分割后的索引（从0开始）")
+    app_system_index = Column(Integer, nullable=False, default=2, comment="应用系统字段在下划线分割后的索引（从0开始）")
+    enabled = Column(Integer, nullable=False, default=1, comment="是否启用：1启用 0禁用")
+
+
+class SchedulerConfig(Base):
+    __tablename__ = "scheduler_config"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    cron_expr = Column(String(64), nullable=False, default="0 0 2 * * ?", comment="定时任务Cron表达式")
+    metric_period = Column(Integer, nullable=False, default=300, comment="监控数据采样周期（秒）")
+
+
 class EvsVolume(Base):
     __tablename__ = "evs_volume"
 

@@ -11,4 +11,10 @@ export const API_PATHS = {
   CONFIG_UPDATE: '/config/update',
   CONFIG_DELETE: '/config/delete',
   CONFIG_REFRESH: '/config/refresh',
+  PARSE_RULES_LIST: '/config/parse-rules',
+  PARSE_RULES_ADD: '/config/parse-rules/add',
+  PARSE_RULES_UPDATE: '/config/parse-rules/update',
+  PARSE_RULES_DELETE: '/config/parse-rules/delete',
+  SCHEDULER_CONFIG: '/config/scheduler',
+  SCHEDULER_UPDATE: '/config/scheduler/update',
 }

@@ -3,7 +3,7 @@ import logging
 
 from sqlalchemy.orm import Session
 
-from models import EcsConfig, EcsServer
+from models import EcsConfig, EcsServer, ParseRule
 from services.hwcloud_client import hwcloud_get_with_retry
 
 logger = logging.getLogger(__name__)
@@ -119,13 +119,23 @@ class EcsService:
         return server
 
     def _parse_name_parts(self, name: str, server: EcsServer):
-        if not name or not name.startswith("WC_WUH_13_"):
+        if not name:
             return
-        suffix = name[len("WC_WUH_13_"):]
-        parts = suffix.split("_")
-        if len(parts) >= 2:
-            server.department = parts[0]
-            server.app_system = parts[1]
+        # 从数据库读取启用的解析规则，按id升序（即页面显示顺序）依次匹配，匹配到第一条即停止
+        rules = self.db.query(ParseRule).filter_by(enabled=1).order_by(ParseRule.id).all()
+        for rule in rules:
+            prefix = rule.name_prefix or ""
+            # 前缀为空时匹配所有云主机，前缀不为空时只匹配以前缀开头的云主机
+            if prefix and not name.startswith(prefix):
+                continue
+            suffix = name[len(prefix):]
+            parts = suffix.split("_")
+            if len(parts) > max(rule.department_index, rule.app_system_index):
+                if rule.department_index >= 0:
+                    server.department = parts[rule.department_index]
+                if rule.app_system_index >= 0:
+                    server.app_system = parts[rule.app_system_index]
+            return
 
     def _parse_addresses(self, addresses: dict, server: EcsServer):
         if not addresses:

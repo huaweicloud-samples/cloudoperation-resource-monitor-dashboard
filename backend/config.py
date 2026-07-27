@@ -6,9 +6,6 @@ DB_PATH = os.getenv("HWCloud_DB_PATH", "hwcloud_resource_monitor.db")
 # 服务端口
 SERVER_PORT = int(os.getenv("HWCloud_SERVER_PORT", "8080"))
 
-# 定时任务 Cron 表达式（默认每天凌晨2点）
-SCHEDULER_CRON = os.getenv("HWCloud_SCHEDULER_CRON", "0 0 2 * * ?")
-
 # CPU 架构规格列表
 X86_SPECS = os.getenv(
     "HWCloud_CPU_ARCH_X86_SPECS",

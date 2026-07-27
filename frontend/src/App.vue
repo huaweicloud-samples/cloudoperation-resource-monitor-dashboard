@@ -1,12 +1,11 @@
 <template>
   <div class="app-layout">
     <div class="app-header">
-      <div class="header-left">
+      <router-link to="/cloud-vm" class="app-title-link">
         <span class="app-title">华为云资源监控</span>
-      </div>
-      <div class="header-nav">
-        <router-link to="/cloud-vm" class="nav-link" active-class="nav-active">云主机列表</router-link>
-        <router-link to="/settings" class="nav-link" active-class="nav-active">鉴权设置</router-link>
+      </router-link>
+      <div class="header-right">
+        <el-icon class="header-setting-icon" @click="$router.push('/settings')"><Setting /></el-icon>
       </div>
     </div>
     <div class="app-main">
@@ -16,6 +15,7 @@
 </template>
 
 <script setup>
+import { Setting } from '@element-plus/icons-vue'
 </script>
 
 <style>
@@ -43,6 +43,7 @@ body {
   border-bottom: 1px solid #e4e7ed;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 20px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   position: sticky;
@@ -50,39 +51,35 @@ body {
   z-index: 100;
 }
 
-.header-left {
-  margin-right: 40px;
+.app-title-link {
+  text-decoration: none;
 }
 
 .app-title {
   font-size: 16px;
   font-weight: 600;
   color: #303133;
+  cursor: pointer;
 }
 
-.header-nav {
+.app-title:hover {
+  color: #409eff;
+}
+
+.header-right {
   display: flex;
-  gap: 4px;
+  align-items: center;
 }
 
-.nav-link {
-  padding: 0 16px;
-  height: 50px;
-  line-height: 50px;
-  font-size: 14px;
+.header-setting-icon {
+  font-size: 20px;
   color: #606266;
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
+  cursor: pointer;
+  transition: color 0.2s;
 }
 
-.nav-link:hover {
+.header-setting-icon:hover {
   color: #409eff;
-}
-
-.nav-active {
-  color: #409eff;
-  border-bottom-color: #409eff;
 }
 
 .app-main {

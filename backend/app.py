@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import SERVER_PORT, SCHEDULER_CRON
+from config import SERVER_PORT
 from database import init_db
 from init_data import run_init_data
 from scheduler import start_scheduler, shutdown_scheduler
@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
     # 在后台线程中执行初始化数据采集，不阻塞服务启动
     init_thread = threading.Thread(target=run_init_data, daemon=True)
     init_thread.start()
-    start_scheduler(SCHEDULER_CRON)
+    start_scheduler()
     logger.info("应用启动完成")
     yield
     # Shutdown

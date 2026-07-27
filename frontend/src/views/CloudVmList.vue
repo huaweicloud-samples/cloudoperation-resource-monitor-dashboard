@@ -166,7 +166,6 @@ async function loadData() {
     if (res.code === 200) {
       tableData.value = res.data.list
       pagination.total = res.data.total
-      // 从当前数据列表中提取状态选项
       updateStatusOptions(res.data.list)
     }
   } catch (e) {
@@ -183,7 +182,6 @@ function updateStatusOptions(list) {
       if (item.status) statusSet.add(item.status)
     })
   }
-  // 合并已有选项，避免翻页后丢失
   filterOptions.statusOptions.forEach(s => statusSet.add(s))
   filterOptions.statusOptions = [...statusSet].sort()
 }

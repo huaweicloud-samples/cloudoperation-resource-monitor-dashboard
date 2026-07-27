@@ -208,3 +208,31 @@ export function deleteConfig(params) {
 export function refreshConfigResources(params) {
   return request.post(API_PATHS.CONFIG_REFRESH, null, { params })
 }
+
+// ==================== 解析规则 ====================
+
+export function fetchParseRules() {
+  return request.get(API_PATHS.PARSE_RULES_LIST)
+}
+
+export function addParseRule(data) {
+  return request.post(API_PATHS.PARSE_RULES_ADD, data)
+}
+
+export function updateParseRule(data) {
+  return request.put(API_PATHS.PARSE_RULES_UPDATE, data)
+}
+
+export function deleteParseRule(params) {
+  return request.delete(API_PATHS.PARSE_RULES_DELETE, { params })
+}
+
+// ==================== 定时任务配置 ====================
+
+export function fetchSchedulerConfig() {
+  return request.get(API_PATHS.SCHEDULER_CONFIG)
+}
+
+export function updateSchedulerConfig(data) {
+  return request.put(API_PATHS.SCHEDULER_UPDATE, data)
+}

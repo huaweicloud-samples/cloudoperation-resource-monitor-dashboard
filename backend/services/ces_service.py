@@ -5,8 +5,9 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
-from models import EcsConfig, EcsServer, CesMetric, CesMetricData, CesMetricDataDay
+from models import EcsConfig, EcsServer, CesMetric, CesMetricData, CesMetricDataDay, SchedulerConfig
 from services.hwcloud_client import hwcloud_get_with_retry, hwcloud_post_with_retry
+from database import SessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,20 @@ MAX_METRICS_PER_REQUEST = 10
 ONE_DAY_MS = 24 * 3600 * 1000
 MAX_REQUEST_BODY_KB = 512
 CES_PAGE_LIMIT = 1000
+
+
+def _get_metric_period() -> int:
+    """从数据库获取监控数据采样周期（秒），默认300"""
+    try:
+        db = SessionLocal()
+        cfg = db.query(SchedulerConfig).first()
+        if cfg and cfg.metric_period:
+            return cfg.metric_period
+        return 300
+    except Exception:
+        return 300
+    finally:
+        db.close()
 
 
 class _MetricAggregate:
@@ -235,7 +250,7 @@ class CesService:
                 for filter_type in filters:
                     request_body = {
                         "metrics": batch_metrics,
-                        "period": "300",
+                        "period": str(_get_metric_period()),
                         "filter": filter_type,
                         "from": seg_from,
                         "to": seg_to,

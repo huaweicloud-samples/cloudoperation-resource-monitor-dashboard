@@ -5,9 +5,11 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import EcsConfig
+from models import EcsConfig, ParseRule, SchedulerConfig
 from schemas import (
     EcsConfigItem, EcsConfigCreateRequest, EcsConfigUpdateRequest,
+    ParseRuleItem, ParseRuleCreateRequest, ParseRuleUpdateRequest,
+    SchedulerConfigItem, SchedulerConfigUpdateRequest,
     ApiResponse,
 )
 from services.ecs_service import EcsService
@@ -152,3 +154,111 @@ def refresh_config_resources(
     thread.start()
 
     return ApiResponse.success("刷新任务已启动，请稍后查看数据更新")
+
+
+# ==================== 解析规则 ====================
+
+
+def _to_parse_rule_item(rule: ParseRule) -> ParseRuleItem:
+    return ParseRuleItem(
+        id=rule.id,
+        namePrefix=rule.name_prefix,
+        departmentIndex=rule.department_index,
+        appSystemIndex=rule.app_system_index,
+        enabled=rule.enabled,
+    )
+
+
+@router.get("/parse-rules")
+def list_parse_rules(db: Session = Depends(get_db)):
+    rules = db.query(ParseRule).order_by(ParseRule.id).all()
+    items = [_to_parse_rule_item(r) for r in rules]
+    return ApiResponse.success(items)
+
+
+@router.post("/parse-rules/add")
+def add_parse_rule(request: ParseRuleCreateRequest, db: Session = Depends(get_db)):
+    rule = ParseRule(
+        name_prefix=request.namePrefix,
+        department_index=request.departmentIndex,
+        app_system_index=request.appSystemIndex,
+        enabled=request.enabled,
+    )
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+    return ApiResponse.success(_to_parse_rule_item(rule))
+
+
+@router.put("/parse-rules/update")
+def update_parse_rule(request: ParseRuleUpdateRequest, db: Session = Depends(get_db)):
+    rule = db.query(ParseRule).filter_by(id=request.id).first()
+    if not rule:
+        return ApiResponse.error(404, "解析规则不存在")
+
+    if request.namePrefix is not None:
+        rule.name_prefix = request.namePrefix
+    if request.departmentIndex is not None:
+        rule.department_index = request.departmentIndex
+    if request.appSystemIndex is not None:
+        rule.app_system_index = request.appSystemIndex
+    if request.enabled is not None:
+        rule.enabled = request.enabled
+
+    db.commit()
+    return ApiResponse.success(_to_parse_rule_item(rule))
+
+
+@router.delete("/parse-rules/delete")
+def delete_parse_rule(id: int = Query(...), db: Session = Depends(get_db)):
+    rule = db.query(ParseRule).filter_by(id=id).first()
+    if not rule:
+        return ApiResponse.error(404, "解析规则不存在")
+
+    db.delete(rule)
+    db.commit()
+    return ApiResponse.success("删除成功")
+
+
+# ==================== 定时任务配置 ====================
+
+
+def _to_scheduler_config_item(cfg: SchedulerConfig) -> SchedulerConfigItem:
+    return SchedulerConfigItem(
+        id=cfg.id,
+        cronExpr=cfg.cron_expr,
+        metricPeriod=cfg.metric_period,
+    )
+
+
+@router.get("/scheduler")
+def get_scheduler_config(db: Session = Depends(get_db)):
+    cfg = db.query(SchedulerConfig).first()
+    if not cfg:
+        # 首次访问时自动创建默认配置
+        cfg = SchedulerConfig(cron_expr="0 0 2 * * ?", metric_period=300)
+        db.add(cfg)
+        db.commit()
+        db.refresh(cfg)
+    return ApiResponse.success(_to_scheduler_config_item(cfg))
+
+
+@router.put("/scheduler/update")
+def update_scheduler_config(request: SchedulerConfigUpdateRequest, db: Session = Depends(get_db)):
+    cfg = db.query(SchedulerConfig).filter_by(id=request.id).first()
+    if not cfg:
+        return ApiResponse.error(404, "定时任务配置不存在")
+
+    if request.cronExpr is not None:
+        cfg.cron_expr = request.cronExpr
+    if request.metricPeriod is not None:
+        cfg.metric_period = request.metricPeriod
+
+    db.commit()
+
+    # 动态更新调度器
+    if request.cronExpr is not None:
+        from scheduler import update_scheduler_cron
+        update_scheduler_cron(cfg.cron_expr)
+
+    return ApiResponse.success(_to_scheduler_config_item(cfg))
