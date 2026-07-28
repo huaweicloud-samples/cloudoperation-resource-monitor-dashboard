@@ -54,23 +54,31 @@ This platform helps operations teams efficiently complete resource inspections a
 
 ### Cloud Server List
 
-![Cloud Server List](resources/ecs_list.png)
+![Cloud Server List](resources/ecs_list_en.png)
 
 ### Search Results
 
-![Search Results](resources/ecs_search.png)
+![Search Results](resources/ecs_search_en.png)
 
 ### Export Report
 
-![Export Report](resources/export.png)
+![Export Report](resources/export_en.png)
+
+### Parse Rules Configuration
+
+![Parse Rules Configuration](resources/ecs_name_parse_rules_config_en.png)
+
+### Scheduled Task Configuration
+
+![Scheduled Task Configuration](resources/scheduled_task_config_en.png)
 
 ### Authentication Configuration
 
-![Authentication Configuration](resources/config.png)
+![Authentication Configuration](resources/auth_config_en.png)
 
 ### Export Report Template
 
-The exported Excel report template can be found at [resources/弹性云服务器报告.xlsx](resources/弹性云服务器报告.xlsx), containing cloud server basic info and CPU/memory/disk utilization data.
+The exported Excel report template can be found at [resources/ECS_Report_example.xlsx](resources/ECS_Report_example.xlsx), containing cloud server basic info and CPU/memory/disk utilization data.
 
 ---
 

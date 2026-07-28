@@ -53,23 +53,31 @@ HuaweiCloud Resource Monitor Dashboard 是一个面向**华为云弹性云服务
 
 ### 云主机列表
 
-![云主机列表](resources/ecs_list.png)
+![云主机列表](resources/ecs_list_zh.png)
 
 ### 检索结果
 
-![检索结果](resources/ecs_search.png)
+![检索结果](resources/ecs_search_zh.png)
 
 ### 导出报告
 
-![导出报告](resources/export.png)
+![导出报告](resources/export_zh.png)
+
+### 解析规则配置
+
+![解析规则配置](resources/ecs_name_parse_rules_config_zh.png)
+
+### 定时任务配置
+
+![定时任务配置](resources/scheduled_task_config_zh.png)
 
 ### 鉴权配置
 
-![鉴权配置](resources/config.png)
+![鉴权配置](resources/auth_config_zh.png)
 
 ### 导出报告模板
 
-导出的 Excel 报告模板参见 [resources/弹性云服务器报告.xlsx](resources/弹性云服务器报告.xlsx)，包含云主机基本信息和 CPU/内存/磁盘使用率数据。
+导出的 Excel 报告模板参见 [resources/弹性云服务器报告示例.xlsx](resources/弹性云服务器报告示例.xlsx)，包含云主机基本信息和 CPU/内存/磁盘使用率数据。
 
 ---
 

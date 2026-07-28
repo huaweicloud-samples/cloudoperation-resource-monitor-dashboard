@@ -2,9 +2,18 @@
   <div class="app-layout">
     <div class="app-header">
       <router-link to="/cloud-vm" class="app-title-link">
-        <span class="app-title">华为云资源监控</span>
+        <span class="app-title">{{ $t('app.title') }}</span>
       </router-link>
       <div class="header-right">
+        <el-dropdown trigger="click" @command="switchLocale" class="lang-switch">
+          <span class="lang-label">{{ currentLocaleLabel }}</span>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="zh">中文</el-dropdown-item>
+              <el-dropdown-item command="en">English</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
         <el-icon class="header-setting-icon" @click="$router.push('/settings')"><Setting /></el-icon>
       </div>
     </div>
@@ -15,7 +24,19 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
+
+const { locale } = useI18n()
+
+const currentLocaleLabel = computed(() => locale.value === 'zh' ? '中文' : 'EN')
+
+function switchLocale(lang) {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+  location.reload()
+}
 </script>
 
 <style>
@@ -69,6 +90,22 @@ body {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.lang-switch {
+  cursor: pointer;
+}
+
+.lang-label {
+  font-size: 14px;
+  color: #606266;
+  cursor: pointer;
+  user-select: none;
+}
+
+.lang-label:hover {
+  color: #409eff;
 }
 
 .header-setting-icon {

@@ -3,27 +3,27 @@
     <div class="page-header">
       <div class="page-header-left">
         <el-icon class="back-icon" @click="$router.push('/cloud-vm')"><ArrowLeft /></el-icon>
-        <h3>系统设置</h3>
+        <h3>{{ $t('settings.page_title') }}</h3>
       </div>
     </div>
 
     <el-tabs v-model="activeTab" class="settings-tabs">
-      <el-tab-pane label="解析规则" name="parseRule">
+      <el-tab-pane :label="$t('settings.tab_parse_rule')" name="parseRule">
         <div class="tab-header">
-          <span class="tab-desc">配置云主机名称解析规则。未配置解析规则时，不解析云主机名称，委办局和应用系统字段为空。如果云主机有统一的命名规则（如 {部门名称}_{应用系统}_{主机用途}），配置后程序会在下次刷新云主机数据时自动解析。名称前缀为空时解析所有云主机，不为空时只解析以该前缀开头的云主机。按列表顺序依次匹配，匹配到第一条即停止，建议将有前缀的规则排在空前缀规则之前。</span>
+          <span class="tab-desc">{{ $t('settings.parse_rule_desc') }}</span>
         </div>
         <el-table :data="parseRuleList" border stripe style="width: 100%">
-          <el-table-column prop="namePrefix" label="名称前缀" min-width="300">
+          <el-table-column prop="namePrefix" :label="$t('settings.name_prefix')" min-width="300">
             <template #default="{ row }">
-              <span>{{ row.namePrefix || '（空，解析所有云主机）' }}</span>
+              <span>{{ row.namePrefix || $t('settings.empty_prefix') }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120" align="center">
+          <el-table-column :label="$t('common.operation')" width="120" align="center">
             <template #default="{ row }">
-              <el-button type="primary" link size="small" @click="handleEditParseRule(row)">编辑</el-button>
-              <el-popconfirm title="确定删除该解析规则？" @confirm="handleDeleteParseRule(row)">
+              <el-button type="primary" link size="small" @click="handleEditParseRule(row)">{{ $t('common.edit') }}</el-button>
+              <el-popconfirm :title="$t('settings.confirm_delete_rule')" @confirm="handleDeleteParseRule(row)">
                 <template #reference>
-                  <el-button type="danger" link size="small">删除</el-button>
+                  <el-button type="danger" link size="small">{{ $t('common.delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -31,64 +31,64 @@
         </el-table>
         <div class="add-rule-btn">
           <el-button type="primary" size="small" @click="handleAddParseRule">
-            <el-icon><Plus /></el-icon>新增规则
+            <el-icon><Plus /></el-icon>{{ $t('settings.add_rule') }}
           </el-button>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="定时任务" name="scheduler">
+      <el-tab-pane :label="$t('settings.tab_scheduler')" name="scheduler">
         <div class="tab-header">
-          <span class="tab-desc">每天定时刷新云主机和云硬盘数据，获取前一天的使用率数据，如需更改任务执行时间，请在下方选择任务开始执行的时间。</span>
+          <span class="tab-desc">{{ $t('settings.scheduler_desc') }}</span>
         </div>
         <el-form :model="schedulerForm" label-width="120px" class="scheduler-form" v-loading="schedulerLoading">
-          <el-form-item label="执行时间">
-            <el-time-picker v-model="schedulerTime" format="HH:mm" placeholder="选择执行时间" :clearable="false" style="width: 180px" />
-            <span class="time-preview">每天 {{ timePreview }} 执行</span>
+          <el-form-item :label="$t('settings.execution_time')">
+            <el-time-picker v-model="schedulerTime" format="HH:mm" :placeholder="$t('settings.execution_time')" :clearable="false" style="width: 180px" />
+            <span class="time-preview">{{ $t('settings.daily_at', { time: timePreview }) }}</span>
           </el-form-item>
-          <el-form-item label="数据粒度">
-            <el-select v-model="schedulerForm.metricPeriod" placeholder="选择数据粒度" style="width: 180px">
-              <el-option :value="60" label="1分钟" />
-              <el-option :value="300" label="5分钟" />
-              <el-option :value="1200" label="20分钟" />
-              <el-option :value="3600" label="1小时" />
-              <el-option :value="14400" label="4小时" />
-              <el-option :value="86400" label="1天" />
+          <el-form-item :label="$t('settings.data_granularity')">
+            <el-select v-model="schedulerForm.metricPeriod" :placeholder="$t('settings.data_granularity')" style="width: 180px">
+              <el-option :value="60" :label="$t('settings.granularity_1min')" />
+              <el-option :value="300" :label="$t('settings.granularity_5min')" />
+              <el-option :value="1200" :label="$t('settings.granularity_20min')" />
+              <el-option :value="3600" :label="$t('settings.granularity_1h')" />
+              <el-option :value="14400" :label="$t('settings.granularity_4h')" />
+              <el-option :value="86400" :label="$t('settings.granularity_1d')" />
             </el-select>
-            <a class="period-help-link" href="https://support.huaweicloud.com/api-ces/ces_03_0034.html#section5" target="_blank">了解数据粒度说明</a>
+            <a class="period-help-link" href="https://support.huaweicloud.com/api-ces/ces_03_0034.html#section5" target="_blank">{{ $t('settings.granularity_help') }}</a>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="handleSaveScheduler" :loading="schedulerSaveLoading">保存</el-button>
+            <el-button type="primary" @click="handleSaveScheduler" :loading="schedulerSaveLoading">{{ $t('common.save') }}</el-button>
           </el-form-item>
         </el-form>
       </el-tab-pane>
-      <el-tab-pane label="鉴权设置" name="authConfig">
+      <el-tab-pane :label="$t('settings.tab_auth_config')" name="authConfig">
         <div class="tab-header">
-          <span class="tab-desc">管理华为云租户鉴权信息</span>
+          <span class="tab-desc">{{ $t('settings.auth_desc') }}</span>
           <el-button type="primary" size="small" @click="handleAddConfig">
-            <el-icon><Plus /></el-icon>新增鉴权
+            <el-icon><Plus /></el-icon>{{ $t('settings.add_auth') }}
           </el-button>
         </div>
         <el-table :data="configList" border stripe style="width: 100%">
-          <el-table-column prop="regionName" label="区域名称" min-width="160" show-overflow-tooltip />
-          <el-table-column prop="endpoint" label="API端点" min-width="260" show-overflow-tooltip />
-          <el-table-column prop="projectId" label="项目ID" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="ak" label="Access Key" min-width="160" show-overflow-tooltip>
+          <el-table-column prop="regionName" :label="$t('settings.region_name')" min-width="160" show-overflow-tooltip />
+          <el-table-column prop="endpoint" :label="$t('settings.api_endpoint')" min-width="260" show-overflow-tooltip />
+          <el-table-column prop="projectId" :label="$t('settings.project_id')" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="ak" :label="$t('settings.access_key')" min-width="160" show-overflow-tooltip>
             <template #default="{ row }">
               <span>{{ maskSecret(row.ak) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="sk" label="Secret Key" min-width="160" show-overflow-tooltip>
+          <el-table-column prop="sk" :label="$t('settings.secret_key')" min-width="160" show-overflow-tooltip>
             <template #default="{ row }">
               <span>{{ maskSecret(row.sk) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="networkZone" label="网络分区" min-width="100" />
-          <el-table-column label="操作" min-width="220" fixed="right">
+          <el-table-column prop="networkZone" :label="$t('settings.network_zone')" min-width="100" />
+          <el-table-column :label="$t('common.operation')" min-width="220" fixed="right">
             <template #default="{ row }">
-              <el-button type="primary" link size="small" @click="handleEditConfig(row)">编辑</el-button>
-              <el-button type="success" link size="small" @click="handleRefreshConfig(row)" :loading="row._refreshing">刷新资源</el-button>
-              <el-popconfirm title="确定删除该鉴权配置？" @confirm="handleDeleteConfig(row)">
+              <el-button type="primary" link size="small" @click="handleEditConfig(row)">{{ $t('common.edit') }}</el-button>
+              <el-button type="success" link size="small" @click="handleRefreshConfig(row)" :loading="row._refreshing">{{ $t('common.refresh_resources') }}</el-button>
+              <el-popconfirm :title="$t('settings.confirm_delete_auth')" @confirm="handleDeleteConfig(row)">
                 <template #reference>
-                  <el-button type="danger" link size="small">删除</el-button>
+                  <el-button type="danger" link size="small">{{ $t('common.delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -98,44 +98,44 @@
     </el-tabs>
 
     <!-- 解析规则编辑弹窗 -->
-    <el-dialog v-model="parseRuleDialogVisible" :title="isEditParseRule ? '编辑解析规则' : '新增解析规则'" width="480px" destroy-on-close>
+    <el-dialog v-model="parseRuleDialogVisible" :title="isEditParseRule ? $t('settings.edit_rule') : $t('settings.new_rule')" width="480px" destroy-on-close>
       <el-form ref="parseRuleFormRef" :model="parseRuleForm" label-width="100px">
-        <el-form-item label="名称前缀">
-          <el-input v-model="parseRuleForm.namePrefix" placeholder="留空则解析所有云主机" />
-          <div class="form-tip">前缀为空时，按 {部门}_{应用系统}_{主机用途} 格式解析所有云主机；前缀不为空时，只解析以该前缀开头的云主机</div>
+        <el-form-item :label="$t('settings.name_prefix')">
+          <el-input v-model="parseRuleForm.namePrefix" :placeholder="$t('settings.prefix_placeholder')" />
+          <div class="form-tip">{{ $t('settings.prefix_tip') }}</div>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="parseRuleDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmitParseRule" :loading="parseRuleSubmitLoading">确定</el-button>
+        <el-button @click="parseRuleDialogVisible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmitParseRule" :loading="parseRuleSubmitLoading">{{ $t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
 
     <!-- 鉴权配置编辑弹窗 -->
-    <el-dialog v-model="configDialogVisible" :title="isEditConfig ? '编辑鉴权' : '新增鉴权'" width="560px" destroy-on-close>
+    <el-dialog v-model="configDialogVisible" :title="isEditConfig ? $t('settings.edit_auth') : $t('settings.new_auth')" width="560px" destroy-on-close>
       <el-form ref="configFormRef" :model="configForm" :rules="configRules" label-width="100px">
-        <el-form-item label="区域名称" prop="regionName">
-          <el-input v-model="configForm.regionName" placeholder="请输入区域名称" :disabled="isEditConfig" />
+        <el-form-item :label="$t('settings.region_name')" prop="regionName">
+          <el-input v-model="configForm.regionName" :placeholder="$t('settings.enter_region')" :disabled="isEditConfig" />
         </el-form-item>
-        <el-form-item label="API端点" prop="endpoint">
-          <el-input v-model="configForm.endpoint" placeholder="请输入API端点" :disabled="isEditConfig" />
+        <el-form-item :label="$t('settings.api_endpoint')" prop="endpoint">
+          <el-input v-model="configForm.endpoint" :placeholder="$t('settings.enter_endpoint')" :disabled="isEditConfig" />
         </el-form-item>
-        <el-form-item label="项目ID" prop="projectId">
-          <el-input v-model="configForm.projectId" placeholder="请输入项目ID" :disabled="isEditConfig" />
+        <el-form-item :label="$t('settings.project_id')" prop="projectId">
+          <el-input v-model="configForm.projectId" :placeholder="$t('settings.enter_project_id')" :disabled="isEditConfig" />
         </el-form-item>
-        <el-form-item label="Access Key" prop="ak">
-          <el-input v-model="configForm.ak" placeholder="请输入Access Key" />
+        <el-form-item :label="$t('settings.access_key')" prop="ak">
+          <el-input v-model="configForm.ak" :placeholder="$t('settings.enter_ak')" />
         </el-form-item>
-        <el-form-item label="Secret Key" prop="sk">
-          <el-input v-model="configForm.sk" placeholder="请输入Secret Key" type="password" show-password />
+        <el-form-item :label="$t('settings.secret_key')" prop="sk">
+          <el-input v-model="configForm.sk" :placeholder="$t('settings.enter_sk')" type="password" show-password />
         </el-form-item>
-        <el-form-item label="网络分区" prop="networkZone">
-          <el-input v-model="configForm.networkZone" placeholder="请输入网络分区" />
+        <el-form-item :label="$t('settings.network_zone')" prop="networkZone">
+          <el-input v-model="configForm.networkZone" :placeholder="$t('settings.enter_network_zone')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="configDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmitConfig" :loading="configSubmitLoading">确定</el-button>
+        <el-button @click="configDialogVisible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmitConfig" :loading="configSubmitLoading">{{ $t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -146,9 +146,11 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { fetchConfigList, addConfig, updateConfig, deleteConfig, refreshConfigResources, fetchParseRules, addParseRule, updateParseRule, deleteParseRule, fetchSchedulerConfig, updateSchedulerConfig } from '@/api/cloudVm'
 
 const router = useRouter()
+const { t } = useI18n()
 const activeTab = ref('parseRule')
 
 // --- 解析规则 ---
@@ -205,14 +207,14 @@ async function handleSubmitParseRule() {
       res = await addParseRule(data)
     }
     if (res.code === 200) {
-      ElMessage.success(isEditParseRule.value ? '更新成功' : '新增成功')
+      ElMessage.success(isEditParseRule.value ? t('common.update_success') : t('common.add_success'))
       parseRuleDialogVisible.value = false
       loadParseRules()
     } else {
-      ElMessage.error(res.message || '操作失败')
+      ElMessage.error(res.message || t('common.operation_fail'))
     }
   } catch (e) {
-    ElMessage.error('操作失败')
+    ElMessage.error(t('common.operation_fail'))
   } finally {
     parseRuleSubmitLoading.value = false
   }
@@ -222,13 +224,13 @@ async function handleDeleteParseRule(row) {
   try {
     const res = await deleteParseRule({ id: row.id })
     if (res.code === 200) {
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.delete_success'))
       loadParseRules()
     } else {
-      ElMessage.error(res.message || '删除失败')
+      ElMessage.error(res.message || t('common.delete_fail'))
     }
   } catch (e) {
-    ElMessage.error('删除失败')
+    ElMessage.error(t('common.delete_fail'))
   }
 }
 
@@ -293,16 +295,16 @@ async function handleSaveScheduler() {
       metricPeriod: schedulerForm.metricPeriod
     })
     if (res.code === 200) {
-      ElMessage.success('保存成功')
+      ElMessage.success(t('common.save_success'))
       schedulerForm.cronExpr = cronExpr
       if (res.data) {
         schedulerForm.id = res.data.id
       }
     } else {
-      ElMessage.error(res.message || '保存失败')
+      ElMessage.error(res.message || t('common.save_fail'))
     }
   } catch (e) {
-    ElMessage.error('保存失败')
+    ElMessage.error(t('common.save_fail'))
   } finally {
     schedulerSaveLoading.value = false
   }
@@ -324,13 +326,13 @@ const configForm = reactive({
   networkZone: ''
 })
 
-const configRules = {
-  regionName: [{ required: true, message: '请输入区域名称', trigger: 'blur' }],
-  endpoint: [{ required: true, message: '请输入API端点', trigger: 'blur' }],
-  projectId: [{ required: true, message: '请输入项目ID', trigger: 'blur' }],
-  ak: [{ required: true, message: '请输入Access Key', trigger: 'blur' }],
-  sk: [{ required: true, message: '请输入Secret Key', trigger: 'blur' }],
-}
+const configRules = computed(() => ({
+  regionName: [{ required: true, message: t('settings.enter_region'), trigger: 'blur' }],
+  endpoint: [{ required: true, message: t('settings.enter_endpoint'), trigger: 'blur' }],
+  projectId: [{ required: true, message: t('settings.enter_project_id'), trigger: 'blur' }],
+  ak: [{ required: true, message: t('settings.enter_ak'), trigger: 'blur' }],
+  sk: [{ required: true, message: t('settings.enter_sk'), trigger: 'blur' }],
+}))
 
 function maskSecret(val) {
   if (!val || val.length <= 6) return val || ''
@@ -344,7 +346,7 @@ async function loadConfigList() {
       configList.value = (res.data || []).map(item => ({ ...item, _refreshing: false }))
     }
   } catch (e) {
-    ElMessage.error('获取鉴权配置失败')
+    ElMessage.error(t('common.fetch_fail'))
   }
 }
 
@@ -380,14 +382,14 @@ async function handleSubmitConfig() {
       res = await addConfig(configForm)
     }
     if (res.code === 200) {
-      ElMessage.success(isEditConfig.value ? '更新成功' : '新增成功')
+      ElMessage.success(isEditConfig.value ? t('common.update_success') : t('common.add_success'))
       configDialogVisible.value = false
       loadConfigList()
     } else {
-      ElMessage.error(res.message || '操作失败')
+      ElMessage.error(res.message || t('common.operation_fail'))
     }
   } catch (e) {
-    ElMessage.error('操作失败')
+    ElMessage.error(t('common.operation_fail'))
   } finally {
     configSubmitLoading.value = false
   }
@@ -401,13 +403,13 @@ async function handleDeleteConfig(row) {
       projectId: row.projectId
     })
     if (res.code === 200) {
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.delete_success'))
       loadConfigList()
     } else {
-      ElMessage.error(res.message || '删除失败')
+      ElMessage.error(res.message || t('common.delete_fail'))
     }
   } catch (e) {
-    ElMessage.error('删除失败')
+    ElMessage.error(t('common.delete_fail'))
   }
 }
 
@@ -420,12 +422,12 @@ async function handleRefreshConfig(row) {
       projectId: row.projectId
     })
     if (res.code === 200) {
-      ElMessage.success('刷新任务已启动，请稍后查看数据更新')
+      ElMessage.success(t('common.refresh_started'))
     } else {
-      ElMessage.error(res.message || '刷新失败')
+      ElMessage.error(res.message || t('common.refresh_fail'))
     }
   } catch (e) {
-    ElMessage.error('刷新失败')
+    ElMessage.error(t('common.refresh_fail'))
   } finally {
     row._refreshing = false
   }

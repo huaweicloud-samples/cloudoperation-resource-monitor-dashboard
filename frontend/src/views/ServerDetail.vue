@@ -1,83 +1,83 @@
 <template>
   <div class="server-detail-page">
     <div class="page-header">
-      <el-button @click="goBack" :icon="ArrowLeft" text>返回列表</el-button>
-      <h3>{{ detail.hostName || '主机详情' }}</h3>
+      <el-button @click="goBack" :icon="ArrowLeft" text>{{ $t('server_detail.back_to_list') }}</el-button>
+      <h3>{{ detail.hostName || $t('server_detail.page_title') }}</h3>
     </div>
 
     <div v-loading="detailLoading" class="detail-section">
-      <h4 class="section-title">基本信息</h4>
+      <h4 class="section-title">{{ $t('server_detail.basic_info') }}</h4>
       <el-descriptions :column="3" border size="default">
-        <el-descriptions-item label="主机名称">{{ detail.hostName || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="运行状态">
+        <el-descriptions-item :label="$t('cloud_vm.host_name')">{{ detail.hostName || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.running_status')">
           <el-tag :type="statusTagType(detail.status)" size="small">{{ detail.status || '-' }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="所属部门">{{ detail.department || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="应用系统">{{ detail.appSystem || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="区域名称">{{ detail.regionName || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="网络分区">{{ detail.networkZone || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="IPv4地址">{{ detail.ipAddress || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="IPv6地址">{{ detail.ipv6 || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="弹性公网IP">{{ detail.publicEip || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="操作系统">{{ detail.os || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="操作系统版本">{{ detail.osName || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="镜像名称">{{ detail.imageName || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="云主机规格">{{ detail.spec || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="CPU架构">{{ detail.architecture || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="可用区">{{ detail.availabilityZone || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="CPU（核）">{{ detail.cpu || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="内存（GB）">{{ detail.memory || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ detail.createdAt || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.department')">{{ detail.department || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.app_system')">{{ detail.appSystem || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.region_name')">{{ detail.regionName || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.network_zone')">{{ detail.networkZone || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.ipv4')">{{ detail.ipAddress || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.ipv6')">{{ detail.ipv6 || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.public_eip')">{{ detail.publicEip || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('cloud_vm.os')">{{ detail.os || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.os_version')">{{ detail.osName || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.image_name')">{{ detail.imageName || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.vm_spec')">{{ detail.spec || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('cloud_vm.cpu_arch')">{{ detail.architecture || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.availability_zone')">{{ detail.availabilityZone || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.cpu_cores')">{{ detail.cpu || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.memory_gb')">{{ detail.memory || '-' }}</el-descriptions-item>
+        <el-descriptions-item :label="$t('server_detail.created_at')">{{ detail.createdAt || '-' }}</el-descriptions-item>
       </el-descriptions>
 
       <template v-if="detail.volumes && detail.volumes.length > 0">
-        <h4 class="section-title" style="margin-top: 20px;">磁盘信息</h4>
+        <h4 class="section-title" style="margin-top: 20px;">{{ $t('server_detail.disk_info') }}</h4>
         <el-table :data="detail.volumes" border size="small" style="width: 100%">
-          <el-table-column prop="name" label="名称" min-width="140" show-overflow-tooltip />
-          <el-table-column prop="size" label="大小(GB)" width="100" align="center" />
-          <el-table-column prop="volumeType" label="类型" width="100" align="center" />
-          <el-table-column prop="ioLabel" label="IO类型" width="100" align="center" />
-          <el-table-column prop="diskType" label="磁盘类型" width="100" align="center" />
+          <el-table-column prop="name" :label="$t('server_detail.disk_name')" min-width="140" show-overflow-tooltip />
+          <el-table-column prop="size" :label="$t('server_detail.disk_size')" width="100" align="center" />
+          <el-table-column prop="volumeType" :label="$t('server_detail.disk_type')" width="100" align="center" />
+          <el-table-column prop="ioLabel" :label="$t('server_detail.io_type')" width="100" align="center" />
+          <el-table-column prop="diskType" :label="$t('server_detail.disk_category')" width="100" align="center" />
         </el-table>
       </template>
     </div>
 
     <div class="metric-section">
       <div class="metric-header">
-        <h4 class="section-title">使用率数据</h4>
+        <h4 class="section-title">{{ $t('server_detail.metric_data') }}</h4>
         <div class="metric-controls">
           <el-date-picker
             v-model="dateRange"
             type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
+            :range-separator="$t('common.to')"
+            :start-placeholder="$t('server_detail.start_date')"
+            :end-placeholder="$t('server_detail.end_date')"
             value-format="YYYY-MM-DD"
             :disabled-date="disabledDate"
             style="width: 280px"
             @change="loadMetricData"
           />
           <el-select v-model="period" style="width: 120px" @change="loadMetricData">
-            <el-option label="5分钟" value="5min" />
-            <el-option label="按天" value="day" />
+            <el-option :label="$t('server_detail.period_5min')" value="5min" />
+            <el-option :label="$t('server_detail.period_day')" value="day" />
           </el-select>
-          <el-button type="success" @click="handleExportMetric" :loading="exportLoading" :icon="Download">导出数据</el-button>
+          <el-button type="success" @click="handleExportMetric" :loading="exportLoading" :icon="Download">{{ $t('server_detail.export_data') }}</el-button>
         </div>
       </div>
 
       <div v-loading="metricLoading" class="metric-charts">
-        <div v-if="metricData.length === 0 && !metricLoading" class="no-data">暂无监控数据</div>
+        <div v-if="metricData.length === 0 && !metricLoading" class="no-data">{{ $t('server_detail.no_metric_data') }}</div>
         <template v-else>
           <div class="chart-container">
-            <div class="chart-title">CPU使用率 (%)</div>
+            <div class="chart-title">{{ $t('server_detail.cpu_usage') }}</div>
             <div class="chart-wrapper" ref="cpuChartRef"></div>
           </div>
           <div class="chart-container">
-            <div class="chart-title">内存使用率 (%)</div>
+            <div class="chart-title">{{ $t('server_detail.mem_usage') }}</div>
             <div class="chart-wrapper" ref="memChartRef"></div>
           </div>
           <div class="chart-container">
-            <div class="chart-title">磁盘使用率 (%)</div>
+            <div class="chart-title">{{ $t('server_detail.disk_usage') }}</div>
             <div class="chart-wrapper" ref="diskChartRef"></div>
           </div>
         </template>
@@ -87,13 +87,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { fetchServerDetail, fetchServerMetricData, exportServerMetric } from '@/api/cloudVm'
 import dayjs from 'dayjs'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const serverId = route.params.id
@@ -116,7 +118,7 @@ let memChart = null
 let diskChart = null
 
 function statusTagType(status) {
-  const map = { '运行中': 'success', '已关机': 'info', '异常': 'danger' }
+  const map = { '运行中': 'success', '已关机': 'info', '异常': 'danger', 'Running': 'success', 'Stopped': 'info', 'Error': 'danger' }
   return map[status] || 'info'
 }
 
@@ -135,10 +137,10 @@ async function loadDetail() {
     if (res.code === 200 && res.data) {
       Object.assign(detail, res.data)
     } else {
-      ElMessage.error(res.message || '获取主机详情失败')
+      ElMessage.error(res.message || t('server_detail.fetch_detail_fail'))
     }
   } catch (e) {
-    ElMessage.error('获取主机详情失败')
+    ElMessage.error(t('server_detail.fetch_detail_fail'))
   } finally {
     detailLoading.value = false
   }
@@ -160,7 +162,7 @@ async function loadMetricData() {
       renderCharts()
     }
   } catch (e) {
-    ElMessage.error('获取监控数据失败')
+    ElMessage.error(t('server_detail.fetch_metric_fail'))
   } finally {
     metricLoading.value = false
   }
@@ -168,7 +170,7 @@ async function loadMetricData() {
 
 async function handleExportMetric() {
   if (!dateRange.value || dateRange.value.length !== 2) {
-    ElMessage.warning('请先选择时间范围')
+    ElMessage.warning(t('server_detail.select_time_range'))
     return
   }
   exportLoading.value = true
@@ -178,9 +180,9 @@ async function handleExportMetric() {
       endDate: dateRange.value[1],
       period: period.value
     }, detail.hostName, metricData.value)
-    ElMessage.success('导出成功')
+    ElMessage.success(t('common.export_success'))
   } catch (e) {
-    ElMessage.error('导出失败')
+    ElMessage.error(t('common.export_fail'))
   } finally {
     exportLoading.value = false
   }
@@ -195,26 +197,25 @@ function renderCharts() {
   })
 
   renderChart(cpuChartRef, cpuChart, 'cpuChart', timestamps, [
-    { name: '峰值', data: metricData.value.map(d => d.cpuUtilMax), color: '#f56c6c' },
-    { name: '均值', data: metricData.value.map(d => d.cpuUtilAvg), color: '#409eff' },
-    { name: '最小值', data: metricData.value.map(d => d.cpuUtilMin), color: '#67c23a' },
+    { name: t('server_detail.peak'), data: metricData.value.map(d => d.cpuUtilMax), color: '#f56c6c' },
+    { name: t('server_detail.average'), data: metricData.value.map(d => d.cpuUtilAvg), color: '#409eff' },
+    { name: t('server_detail.minimum'), data: metricData.value.map(d => d.cpuUtilMin), color: '#67c23a' },
   ])
 
   renderChart(memChartRef, memChart, 'memChart', timestamps, [
-    { name: '峰值', data: metricData.value.map(d => d.memUtilMax), color: '#f56c6c' },
-    { name: '均值', data: metricData.value.map(d => d.memUtilAvg), color: '#409eff' },
-    { name: '最小值', data: metricData.value.map(d => d.memUtilMin), color: '#67c23a' },
+    { name: t('server_detail.peak'), data: metricData.value.map(d => d.memUtilMax), color: '#f56c6c' },
+    { name: t('server_detail.average'), data: metricData.value.map(d => d.memUtilAvg), color: '#409eff' },
+    { name: t('server_detail.minimum'), data: metricData.value.map(d => d.memUtilMin), color: '#67c23a' },
   ])
 
   renderChart(diskChartRef, diskChart, 'diskChart', timestamps, [
-    { name: '峰值', data: metricData.value.map(d => d.diskUtilMax), color: '#f56c6c' },
-    { name: '均值', data: metricData.value.map(d => d.diskUtilAvg), color: '#409eff' },
-    { name: '最小值', data: metricData.value.map(d => d.diskUtilMin), color: '#67c23a' },
+    { name: t('server_detail.peak'), data: metricData.value.map(d => d.diskUtilMax), color: '#f56c6c' },
+    { name: t('server_detail.average'), data: metricData.value.map(d => d.diskUtilAvg), color: '#409eff' },
+    { name: t('server_detail.minimum'), data: metricData.value.map(d => d.diskUtilMin), color: '#67c23a' },
   ])
 }
 
 function renderChart(containerRef, chartInstance, chartKey, xData, seriesList) {
-  // Use a simple canvas-based chart rendering without external chart library
   const container = containerRef.value
   if (!container) return
 
@@ -235,11 +236,9 @@ function renderChart(containerRef, chartInstance, chartKey, xData, seriesList) {
   const chartWidth = width - padding.left - padding.right
   const chartHeight = height - padding.top - padding.bottom
 
-  // Background
   ctx.fillStyle = '#fafafa'
   ctx.fillRect(0, 0, width, height)
 
-  // Find max value for Y axis
   let maxVal = 0
   for (const s of seriesList) {
     for (const v of s.data) {
@@ -249,7 +248,6 @@ function renderChart(containerRef, chartInstance, chartKey, xData, seriesList) {
   maxVal = Math.max(maxVal, 10)
   const yMax = Math.ceil(maxVal / 10) * 10 + 10
 
-  // Grid lines
   ctx.strokeStyle = '#e4e7ed'
   ctx.lineWidth = 0.5
   const ySteps = 5
@@ -260,7 +258,6 @@ function renderChart(containerRef, chartInstance, chartKey, xData, seriesList) {
     ctx.lineTo(padding.left + chartWidth, y)
     ctx.stroke()
 
-    // Y labels
     const val = yMax - (yMax / ySteps) * i
     ctx.fillStyle = '#909399'
     ctx.font = '11px sans-serif'
@@ -268,7 +265,6 @@ function renderChart(containerRef, chartInstance, chartKey, xData, seriesList) {
     ctx.fillText(val.toFixed(0), padding.left - 8, y + 4)
   }
 
-  // X labels (show at most 8 labels)
   const xLabelCount = Math.min(xData.length, 8)
   const xStep = xData.length > 1 ? Math.floor(xData.length / xLabelCount) : 1
   ctx.fillStyle = '#909399'
@@ -280,7 +276,6 @@ function renderChart(containerRef, chartInstance, chartKey, xData, seriesList) {
     ctx.fillText(label, x, height - padding.bottom + 20)
   }
 
-  // Draw series
   for (const s of seriesList) {
     if (s.data.length === 0) continue
     ctx.strokeStyle = s.color
@@ -295,7 +290,6 @@ function renderChart(containerRef, chartInstance, chartKey, xData, seriesList) {
     ctx.stroke()
   }
 
-  // Legend
   let legendX = padding.left
   for (const s of seriesList) {
     ctx.fillStyle = s.color
@@ -309,7 +303,6 @@ function renderChart(containerRef, chartInstance, chartKey, xData, seriesList) {
 }
 
 onMounted(() => {
-  // Default: last 24 hours
   const end = dayjs()
   const start = end.subtract(1, 'day')
   dateRange.value = [start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD')]

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import i18n from '@/i18n'
 
 const routes = [
   {
@@ -9,19 +10,19 @@ const routes = [
     path: '/cloud-vm',
     name: 'CloudVmList',
     component: () => import('@/views/CloudVmList.vue'),
-    meta: { title: '云主机列表' }
+    meta: { titleKey: 'cloud_vm.page_title' }
   },
   {
     path: '/cloud-vm/:id',
     name: 'ServerDetail',
     component: () => import('@/views/ServerDetail.vue'),
-    meta: { title: '主机详情' }
+    meta: { titleKey: 'server_detail.page_title' }
   },
   {
     path: '/settings',
     name: 'Settings',
     component: () => import('@/views/Settings.vue'),
-    meta: { title: '鉴权设置' }
+    meta: { titleKey: 'settings.page_title' }
   }
 ]
 
@@ -31,7 +32,8 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || '华为云资源监控'
+  const titleKey = to.meta.titleKey || 'app.title'
+  document.title = i18n.global.t(titleKey)
   next()
 })
 

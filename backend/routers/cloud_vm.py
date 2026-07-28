@@ -11,6 +11,11 @@ from sqlalchemy.orm import Session
 
 from config import get_x86_specs_set, get_aarch64_specs_set, get_ies_specs_set
 from database import get_db
+from i18n import (
+    get_status, get_io_label, get_disk_type,
+    EXPORT_HEADERS, EXPORT_SHEET_TITLE, EXPORT_FILE_NAME,
+    METRIC_HEADERS, METRIC_SHEET_TITLE, METRIC_FILE_NAME,
+)
 from models import EcsServer, EcsConfig, EvsVolume, CesMetricDataDay, CesMetricData
 from schemas import (
     CloudVmListRequest, CloudVmItem, ExportReportRequest,
@@ -32,17 +37,8 @@ def _parse_safe_int(value: str) -> int:
         return 0
 
 
-def _map_status(status: str) -> str:
-    if not status:
-        return "未知"
-    lower = status.lower()
-    if lower == "active":
-        return "运行中"
-    if lower in ("stopped", "shutoff"):
-        return "已关机"
-    if lower == "error":
-        return "异常"
-    return status
+def _map_status(status: str, lang: str = "zh") -> str:
+    return get_status(status, lang)
 
 
 def _determine_cpu_arch(flavor_name: str) -> str:
@@ -90,14 +86,14 @@ def _filter_servers(servers: list, req) -> list:
     return filtered
 
 
-def _to_cloud_vm_item(server: EcsServer) -> CloudVmItem:
+def _to_cloud_vm_item(server: EcsServer, lang: str = "zh") -> CloudVmItem:
     return CloudVmItem(
         id=server.server_id,
         hostName=server.name,
         department=server.department,
         appSystem=server.app_system,
         ipAddress=server.ip_address if server.ip_address else server.access_ipv4,
-        status=_map_status(server.status),
+        status=_map_status(server.status, lang),
         os=server.os_type,
         spec=server.flavor_name,
         architecture=_determine_cpu_arch(server.flavor_name),
@@ -138,10 +134,10 @@ def _calc_metric_stats(
 
 
 @router.post("/list")
-def list_cloud_vms(request: CloudVmListRequest, db: Session = Depends(get_db)):
+def list_cloud_vms(request: CloudVmListRequest, lang: str = Query("zh"), db: Session = Depends(get_db)):
     all_servers = db.query(EcsServer).all()
     filtered = _filter_servers(all_servers, request)
-    items = [_to_cloud_vm_item(s) for s in filtered]
+    items = [_to_cloud_vm_item(s, lang) for s in filtered]
 
     page_num = request.pageNum or 1
     page_size = request.pageSize or 10
@@ -156,7 +152,7 @@ def list_cloud_vms(request: CloudVmListRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/export")
-def export_report(request: ExportReportRequest, db: Session = Depends(get_db)):
+def export_report(request: ExportReportRequest, lang: str = Query("zh"), db: Session = Depends(get_db)):
     start_time = request.startDate + " 00:00:00"
     end_time = request.endDate + " 23:59:59"
 
@@ -186,19 +182,9 @@ def export_report(request: ExportReportRequest, db: Session = Depends(get_db)):
 
     wb = Workbook()
     sheet = wb.active
-    sheet.title = "弹性云服务器报告"
+    sheet.title = EXPORT_SHEET_TITLE.get(lang, EXPORT_SHEET_TITLE["zh"])
 
-    headers = [
-        "弹性云服务器ID", "弹性云服务器名称", "弹性云服务器创建时间", "运行状态",
-        "所属部门", "所属应用", "所属区域", "所属网络分区",
-        "操作系统类型", "镜像ID", "镜像名称", "云主机规格", "CPU架构",
-        "CPU(核)", "内存(GB)", "系统盘(GB)", "数据盘(GB)",
-        "高IO数据盘(GB)", "超高IO数据盘(GB)", "挂载的云硬盘",
-        "项目ID", "domainID", "IPV4地址", "IPV6地址", "region", "弹性公网IP",
-        "CPU使用率峰值(%)", "CPU使用率均值(%)", "CPU使用率最小值(%)",
-        "内存使用率峰值(%)", "内存使用率均值(%)", "内存使用率最小值(%)",
-        "磁盘使用率峰值(%)", "磁盘使用率均值(%)", "磁盘使用率最小值(%)",
-    ]
+    headers = EXPORT_HEADERS.get(lang, EXPORT_HEADERS["zh"])
 
     for col_idx, header in enumerate(headers, 1):
         sheet.cell(row=1, column=col_idx, value=header)
@@ -218,16 +204,14 @@ def export_report(request: ExportReportRequest, db: Session = Depends(get_db)):
             size = vol.size if vol.size else 0
             is_sys = vol.bootable is not None and vol.bootable.lower() == "true"
             type_label = vol.volume_type
+            io_label = get_io_label(type_label, lang)
             if type_label in ("SSD", "ESSD", "ESSD2"):
-                io_label = "超高IO"
                 if not is_sys: ultra_io_data_disk += size
             elif type_label in ("SAS", "GPSSD", "GPSSD2"):
-                io_label = "高IO"
                 if not is_sys: high_io_data_disk += size
             else:
-                io_label = type_label or "普通IO"
                 if not is_sys: high_io_data_disk += size
-            disk_type = "系统盘" if is_sys else "数据盘"
+            disk_type = get_disk_type(is_sys, lang)
             disk_desc_list.append(f"{size}GB（{io_label}、{disk_type}）")
 
         cpu_arch = _determine_cpu_arch(server.flavor_name)
@@ -238,7 +222,7 @@ def export_report(request: ExportReportRequest, db: Session = Depends(get_db)):
             server.server_id or "",
             server.name or "",
             server.created_at or "",
-            _map_status(server.status),
+            _map_status(server.status, lang),
             server.department or "",
             server.app_system or "",
             region_name,
@@ -288,7 +272,8 @@ def export_report(request: ExportReportRequest, db: Session = Depends(get_db)):
     wb.save(output)
     output.seek(0)
 
-    file_name = f"弹性云服务器报告_{request.startDate}_{request.endDate}.xlsx"
+    file_name_prefix = EXPORT_FILE_NAME.get(lang, EXPORT_FILE_NAME["zh"])
+    file_name = f"{file_name_prefix}_{request.startDate}_{request.endDate}.xlsx"
     encoded_name = quote(file_name)
 
     return StreamingResponse(
@@ -324,7 +309,7 @@ def fetch_metric_data(
 
 
 @router.get("/detail/{server_id}")
-def get_server_detail(server_id: str, db: Session = Depends(get_db)):
+def get_server_detail(server_id: str, lang: str = Query("zh"), db: Session = Depends(get_db)):
     server = db.query(EcsServer).filter_by(server_id=server_id).first()
     if not server:
         return ApiResponse.error(404, "云主机不存在")
@@ -337,11 +322,7 @@ def get_server_detail(server_id: str, db: Session = Depends(get_db)):
     volume_list = []
     for vol in volumes:
         is_sys = vol.bootable is not None and vol.bootable.lower() == "true"
-        io_label = "普通IO"
-        if vol.volume_type in ("SSD", "ESSD", "ESSD2"):
-            io_label = "超高IO"
-        elif vol.volume_type in ("SAS", "GPSSD", "GPSSD2"):
-            io_label = "高IO"
+        io_label = get_io_label(vol.volume_type, lang)
         volume_list.append({
             "volumeId": vol.volume_id,
             "name": vol.name or "",
@@ -349,7 +330,7 @@ def get_server_detail(server_id: str, db: Session = Depends(get_db)):
             "volumeType": vol.volume_type or "",
             "ioLabel": io_label,
             "bootable": is_sys,
-            "diskType": "系统盘" if is_sys else "数据盘",
+            "diskType": get_disk_type(is_sys, lang),
         })
 
     detail = ServerDetailItem(
@@ -439,6 +420,7 @@ def export_server_metric(
     startDate: str = Query(...),
     endDate: str = Query(...),
     period: str = Query("5min"),
+    lang: str = Query("zh"),
     db: Session = Depends(get_db),
 ):
     server = db.query(EcsServer).filter_by(server_id=server_id).first()
@@ -463,14 +445,10 @@ def export_server_metric(
 
     wb = Workbook()
     sheet = wb.active
-    sheet.title = "监控数据"
+    sheet.title = METRIC_SHEET_TITLE.get(lang, METRIC_SHEET_TITLE["zh"])
 
     host_name = server.name or server_id
-    headers = [
-        "时间", "CPU使用率峰值(%)", "CPU使用率均值(%)", "CPU使用率最小值(%)",
-        "内存使用率峰值(%)", "内存使用率均值(%)", "内存使用率最小值(%)",
-        "磁盘使用率峰值(%)", "磁盘使用率均值(%)", "磁盘使用率最小值(%)",
-    ]
+    headers = METRIC_HEADERS.get(lang, METRIC_HEADERS["zh"])
 
     for col_idx, header in enumerate(headers, 1):
         sheet.cell(row=1, column=col_idx, value=header)
@@ -503,7 +481,8 @@ def export_server_metric(
     wb.save(output)
     output.seek(0)
 
-    file_name = f"{host_name}_监控数据_{startDate}_{endDate}.xlsx"
+    metric_name = METRIC_FILE_NAME.get(lang, METRIC_FILE_NAME["zh"])
+    file_name = f"{host_name}_{metric_name}_{startDate}_{endDate}.xlsx"
     encoded_name = quote(file_name)
 
     return StreamingResponse(

@@ -1,14 +1,14 @@
 <template>
   <div class="export-dialog">
-    <el-dialog v-model="visible" title="导出报告" width="480px" :before-close="handleClose" destroy-on-close>
+    <el-dialog v-model="visible" :title="$t('export_dialog.title')" width="480px" :before-close="handleClose" destroy-on-close>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="时间段" prop="dateRange">
+        <el-form-item :label="$t('export_dialog.time_range')" prop="dateRange">
           <el-date-picker
             v-model="form.dateRange"
             type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
+            :range-separator="$t('common.to')"
+            :start-placeholder="$t('server_detail.start_date')"
+            :end-placeholder="$t('server_detail.end_date')"
             value-format="YYYY-MM-DD"
             :disabled-date="disabledDate"
             style="width: 100%"
@@ -16,16 +16,17 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="handleClose">取消</el-button>
-        <el-button type="primary" @click="handleConfirm" :loading="loading">确认导出</el-button>
+        <el-button @click="handleClose">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleConfirm" :loading="loading">{{ $t('export_dialog.confirm_export') }}</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { exportCloudVmReport } from '@/api/cloudVm'
 
 const props = defineProps({
@@ -35,6 +36,8 @@ const props = defineProps({
 
 const emit = defineEmits(['success'])
 
+const { t } = useI18n()
+
 const visible = ref(false)
 const loading = ref(false)
 const formRef = ref(null)
@@ -43,9 +46,9 @@ const form = reactive({
   dateRange: []
 })
 
-const rules = {
-  dateRange: [{ required: true, message: '请选择时间段', trigger: 'change' }]
-}
+const rules = computed(() => ({
+  dateRange: [{ required: true, message: t('export_dialog.select_time_range'), trigger: 'change' }]
+}))
 
 const disabledDate = (time) => {
   return time.getTime() > Date.now()
@@ -73,11 +76,11 @@ async function handleConfirm() {
       ...props.searchParams
     }
     await exportCloudVmReport(params, props.currentList)
-    ElMessage.success('导出成功')
+    ElMessage.success(t('common.export_success'))
     emit('success')
     handleClose()
   } catch (e) {
-    ElMessage.error('导出失败')
+    ElMessage.error(t('common.export_fail'))
   } finally {
     loading.value = false
   }

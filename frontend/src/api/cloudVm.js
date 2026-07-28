@@ -2,6 +2,11 @@ import axios from 'axios'
 import * as XLSX from 'xlsx'
 import { API_BASE_URL, API_PATHS } from '@/config/api'
 import { getMockList, getMockDetail, getMockMetricData, exportMockListExcel, exportMockMetricExcel } from '@/mock/cloudVm'
+import i18n from '@/i18n'
+
+function getLang() {
+  return i18n.global.locale.value
+}
 
 const request = axios.create({
   baseURL: API_BASE_URL,
@@ -72,7 +77,7 @@ function downloadArrayBuffer(arrayBuffer, headers) {
 // ==================== 云主机列表 ====================
 
 export function fetchCloudVmList(params) {
-  return request.post(API_PATHS.CLOUD_VM_LIST, params).then(res => {
+  return request.post(API_PATHS.CLOUD_VM_LIST + '?lang=' + getLang(), params).then(res => {
     // 后端返回非200或数据为空，使用 mock
     if (res.code !== 200 || !res.data || !res.data.list || res.data.list.length === 0) {
       console.log('[Mock Fallback] 云主机列表无数据，使用 mock 数据')
@@ -96,7 +101,7 @@ export function fetchFilterOptions() {
  * @param {Array} fallbackList - 当后端无数据时，使用当前页面列表数据导出
  */
 export function exportCloudVmReport(params, fallbackList) {
-  return axios.post(API_BASE_URL + API_PATHS.CLOUD_VM_EXPORT, params, {
+  return axios.post(API_BASE_URL + API_PATHS.CLOUD_VM_EXPORT + '?lang=' + getLang(), params, {
     responseType: 'blob',
     timeout: 60000
   }).then(response => {
@@ -124,7 +129,7 @@ export function exportCloudVmReport(params, fallbackList) {
 // ==================== 主机详情 ====================
 
 export function fetchServerDetail(serverId) {
-  return request.get(`${API_PATHS.CLOUD_VM_DETAIL}/${serverId}`).then(res => {
+  return request.get(`${API_PATHS.CLOUD_VM_DETAIL}/${serverId}`, { params: { lang: getLang() } }).then(res => {
     // 后端返回非200或数据为空，使用 mock
     if (res.code !== 200 || !res.data) {
       console.log('[Mock Fallback] 主机详情无数据，使用 mock 数据')
@@ -162,7 +167,7 @@ export function fetchServerMetricData(serverId, params) {
  */
 export function exportServerMetric(serverId, params, hostName, fallbackMetricData) {
   return axios.get(`${API_BASE_URL}${API_PATHS.CLOUD_VM_EXPORT_METRIC}/${serverId}`, {
-    params,
+    params: { ...params, lang: getLang() },
     responseType: 'blob',
     timeout: 60000
   }).then(response => {

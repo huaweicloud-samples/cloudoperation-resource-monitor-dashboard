@@ -1,4 +1,9 @@
 import * as XLSX from 'xlsx'
+import i18n from '@/i18n'
+
+function getLang() {
+  return i18n.global.locale.value
+}
 
 const departments = ['市卫健委', '市教育局', '市公安局', '市交通局', '市住建局', '市财政局', '市人社局', '市自然资源局', '市生态环境局', '市水务局']
 const appSystems = ['基卫云系统', '智慧交通系统', '住房租赁平台', '政务办公系统', '医保管理系统', '教育资源平台', '公共安全系统', '城市管理系统', '应急指挥系统', '数字档案系统']
@@ -133,7 +138,17 @@ export function mockExportReport(params) {
  * @param {string} endDate
  */
 export function exportMockListExcel(list, startDate, endDate) {
-  const headers = [
+  const lang = getLang()
+  const headers = lang === 'en' ? [
+    'ECS ID', 'ECS Name', 'Created At', 'Status',
+    'Department', 'App System', 'Region', 'Network Zone',
+    'OS', 'Flavor', 'CPU Arch',
+    'CPU (cores)', 'Memory (GB)', 'System Disk (GB)', 'Data Disk (GB)',
+    'IP Address',
+    'CPU Util Max (%)', 'CPU Util Avg (%)', 'CPU Util Min (%)',
+    'Mem Util Max (%)', 'Mem Util Avg (%)', 'Mem Util Min (%)',
+    'Disk Util Max (%)', 'Disk Util Avg (%)', 'Disk Util Min (%)',
+  ] : [
     '云主机ID', '主机名称', '创建时间', '运行状态',
     '委办局', '应用系统', '区域', '网络分区',
     '操作系统', '规格', 'CPU架构',
@@ -168,8 +183,10 @@ export function exportMockListExcel(list, startDate, endDate) {
   const ws = XLSX.utils.aoa_to_sheet(wsData)
   ws['!cols'] = headers.map(() => ({ wch: 18 }))
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, '弹性云服务器报告')
-  const fileName = `弹性云服务器报告_${startDate}_${endDate}.xlsx`
+  const sheetName = lang === 'en' ? 'ECS Report' : '弹性云服务器报告'
+  XLSX.utils.book_append_sheet(wb, ws, sheetName)
+  const filePrefix = lang === 'en' ? 'ECS_Report' : '弹性云服务器报告'
+  const fileName = `${filePrefix}_${startDate}_${endDate}.xlsx`
   XLSX.writeFile(wb, fileName)
   return { code: 200 }
 }
@@ -182,7 +199,12 @@ export function exportMockListExcel(list, startDate, endDate) {
  * @param {string} endDate
  */
 export function exportMockMetricExcel(hostName, metricData, startDate, endDate) {
-  const headers = [
+  const lang = getLang()
+  const headers = lang === 'en' ? [
+    'Timestamp', 'CPU Util Max (%)', 'CPU Util Avg (%)', 'CPU Util Min (%)',
+    'Mem Util Max (%)', 'Mem Util Avg (%)', 'Mem Util Min (%)',
+    'Disk Util Max (%)', 'Disk Util Avg (%)', 'Disk Util Min (%)'
+  ] : [
     '时间', 'CPU使用率峰值(%)', 'CPU使用率均值(%)', 'CPU使用率最小值(%)',
     '内存使用率峰值(%)', '内存使用率均值(%)', '内存使用率最小值(%)',
     '磁盘使用率峰值(%)', '磁盘使用率均值(%)', '磁盘使用率最小值(%)'
@@ -197,9 +219,11 @@ export function exportMockMetricExcel(hostName, metricData, startDate, endDate) 
   const ws = XLSX.utils.aoa_to_sheet(wsData)
   ws['!cols'] = headers.map(() => ({ wch: 22 }))
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, '监控数据')
-  const name = hostName || '主机'
-  const fileName = `${name}_监控数据_${startDate}_${endDate}.xlsx`
+  const sheetName = lang === 'en' ? 'Metric Data' : '监控数据'
+  XLSX.utils.book_append_sheet(wb, ws, sheetName)
+  const name = hostName || (lang === 'en' ? 'Host' : '主机')
+  const metricName = lang === 'en' ? 'Metric_Data' : '监控数据'
+  const fileName = `${name}_${metricName}_${startDate}_${endDate}.xlsx`
   XLSX.writeFile(wb, fileName)
   return { code: 200 }
 }
@@ -207,7 +231,12 @@ export function exportMockMetricExcel(hostName, metricData, startDate, endDate) 
 // ==================== 主机详情 Mock ====================
 
 export function getMockDetail(serverId) {
+  const lang = getLang()
   const item = allMockData.find(d => d.id === serverId) || allMockData[0]
+  const sysDiskLabel = lang === 'en' ? 'System Disk' : '系统盘'
+  const dataDiskLabel = lang === 'en' ? 'Data Disk' : '数据盘'
+  const ultraIOLabel = lang === 'en' ? 'Ultra High IO' : '超高IO'
+  const highIOLabel = lang === 'en' ? 'High IO' : '高IO'
   return {
     code: 200,
     data: {
@@ -224,19 +253,19 @@ export function getMockDetail(serverId) {
       spec: item.spec,
       architecture: item.architecture,
       region: item.region,
-      availabilityZone: item.region + '-可用区1',
+      availabilityZone: item.region + (lang === 'en' ? '-AZ1' : '-可用区1'),
       cpu: item.cpu,
       memory: item.memory,
       systemDisk: item.systemDisk,
       dataDisk: item.dataDisk,
       createdAt: '2024-01-15T10:30:00',
-      imageName: item.os + ' 镜像',
+      imageName: item.os + (lang === 'en' ? ' Image' : ' 镜像'),
       projectId: 'mock-project-001',
       regionName: item.region,
-      networkZone: '互联网区',
+      networkZone: lang === 'en' ? 'Internet Zone' : '互联网区',
       volumes: [
-        { volumeId: `vol-sys-${item.id}`, name: '系统盘', size: item.systemDisk, volumeType: 'SSD', ioLabel: '超高IO', bootable: true, diskType: '系统盘' },
-        ...(item.dataDisk > 0 ? [{ volumeId: `vol-data-${item.id}`, name: '数据盘', size: item.dataDisk, volumeType: 'SAS', ioLabel: '高IO', bootable: false, diskType: '数据盘' }] : [])
+        { volumeId: `vol-sys-${item.id}`, name: sysDiskLabel, size: item.systemDisk, volumeType: 'SSD', ioLabel: ultraIOLabel, bootable: true, diskType: sysDiskLabel },
+        ...(item.dataDisk > 0 ? [{ volumeId: `vol-data-${item.id}`, name: dataDiskLabel, size: item.dataDisk, volumeType: 'SAS', ioLabel: highIOLabel, bootable: false, diskType: dataDiskLabel }] : [])
       ]
     }
   }
